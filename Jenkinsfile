@@ -1,20 +1,20 @@
 pipeline {
     agent any
-
+ 
     environment {
         IMAGE_NAME     = "demo-app"
         CONTAINER_NAME = "demo-app-running"
     }
-
+ 
     stages {
-
+ 
         stage('Checkout') {
             steps {
                 checkout scm
                 echo "Code checked out"
             }
         }
-
+ 
         stage('Build') {
             steps {
                 echo "Building Docker image..."
@@ -22,17 +22,13 @@ pipeline {
                 sh "docker tag ${IMAGE_NAME}:${BUILD_NUMBER} ${IMAGE_NAME}:latest"
             }
         }
-
+ 
         stage('Test') {
-            steps {
-                echo "Smoke test — verify app loads..."
-                sh """
-                    docker run --rm ${IMAGE_NAME}:latest \
-                      node -e "require('./app'); console.log('OK')"
-                """
+             steps {
+                   echo "Running tests..."
+                   sh "docker run --rm ${IMAGE_NAME}:latest npm test"
             }
-        }
-
+        } 
         stage('Deploy') {
             steps {
                 echo "Deploying..."
@@ -48,7 +44,7 @@ pipeline {
             }
         }
     }
-
+ 
     post {
         success { echo "All stages passed!" }
         failure { echo "Pipeline failed — check logs above" }
